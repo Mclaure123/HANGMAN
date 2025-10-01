@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HANGMAN v4.4.0 (r19 - FOUC FIX)</title>
+    <title>HANGMAN v4.4.0 (r24 - REGRESSION_FIX)</title>
     <style>
         :root {
             --color-bg-primary: #0A0A0A; --color-surface: #141414; --color-func: #2A2A2A; --color-text-passive: #B0B0B0; --color-text-bright: #FFFFFF; --color-accent-primary: #00FFFF; --color-accent-bios: #00FF8A; --color-error: #FF414B; --color-success: #39FF14; --color-accent-gold: #FFD700; --gap-s: 8px; --gap-m: 16px; --gap-l: 32px;
             --k: clamp(24px, min( (100vw - 32px)/10, (100vh - 200px)/6 ), 64px);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { height: 100%; }
-        body { width: 100%; height: 100%; overflow: hidden; background-color: var(--color-bg-primary); color: var(--color-text-bright); font-family: Consolas, Menlo, Courier New, monospace; font-size: 18px; position: relative; }
+        
+        html { 
+            height: 100%; 
+            font-size: clamp(16px, 1.2vw + 0.5rem, 22px);
+        }
+
+        body { width: 100%; height: 100%; overflow: hidden; background-color: var(--color-bg-primary); color: var(--color-text-bright); font-family: Consolas, Menlo, Courier New, monospace; font-size: 1rem; position: relative; }
         #perspective-container { perspective: 1200px; width: 100%; height: 100%; position: relative; }
         body::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.4) 1px, transparent 2px, transparent 3px); z-index: 10; animation: scanline-scroll 20s linear infinite; }
         @keyframes scanline-scroll { to { background-position-y: 100%; } }
         body::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-image: linear-gradient(var(--color-surface) 1px, transparent 1px), linear-gradient(90deg, var(--color-surface) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.05; z-index: -1; }
         main { width: 100%; height: 100%; position: absolute; top: 0; left: 0; transform-style: preserve-3d; }
         
-        /* MODIFICADO: Arquitectura de ventanas. Ocultas por defecto. */
         .window {
             width: 100%; height: 100%; padding: var(--gap-m) var(--gap-l); position: absolute; top: 0; left: 0;
             display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; gap: var(--gap-m);
@@ -33,7 +37,7 @@
 
         h1 { font-size: 4rem; color: var(--color-accent-primary); letter-spacing: 8px; text-shadow: 0 0 5px var(--color-accent-primary), 0 0 15px var(--color-accent-primary), 0 0 25px var(--color-accent-primary); }
         h2 { font-size: 2.5rem; color: var(--color-text-bright); margin-bottom: var(--gap-m); }
-        p { color: var(--color-text-passive); max-width: 800px; }
+        p { font-size: 1.1rem; color: var(--color-text-passive); max-width: 800px; line-height: 1.6; }
         .interactive-button, button { background-color: var(--color-func); border: 2px solid var(--color-surface); color: var(--color-text-bright); padding: var(--gap-s) var(--gap-m); font-family: inherit; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; transition: background-color 220ms, border-color 220ms, color 220ms, opacity 220ms, transform 220ms; }
         .interactive-button:hover, button:hover { background-color: var(--color-surface); border-color: var(--color-accent-primary); }
         .interactive-button:focus-visible, button:focus-visible { outline: 3px solid var(--color-accent-bios); outline-offset: 2px; }
@@ -68,12 +72,30 @@
         #virtualKeyboard { display: grid; grid-template-columns: repeat(8, var(--k)); grid-template-rows: repeat(4, var(--k)); gap: var(--gap-s); }
         #virtualKeyboard .key { padding: 0; font-size: calc(var(--k) * 0.5); text-transform: none; }
         .key[data-key="Backspace"] { grid-column: span 1; } .key[data-key="Enter"] { grid-column: span 2; } .key[data-key="Shift"] { grid-column: span 2; }
-        #gameDefinition { font-size: 1.68rem; color: var(--color-accent-gold); height: 5em; line-height: 1.4; }
+        
+        #gameDefinition { font-size: 1.5rem; color: var(--color-accent-gold); height: 5em; line-height: 1.5; }
         #wordDisplay { display: flex; gap: var(--gap-s); margin: var(--gap-m) 0; flex-wrap: wrap; justify-content: center;}
-        .word-letter { width: clamp(28px, 8vw, 50px); height: clamp(34px, 10vw, 60px); font-size: clamp(1.5rem, 6vw, 2.5rem); display: flex; justify-content: center; align-items: center; background-color: var(--color-surface); border-bottom: 4px solid var(--color-accent-primary); color: var(--color-text-bright); }
+        .word-letter { width: clamp(28px, 8vw, 50px); height: clamp(34px, 10vw, 60px); font-size: clamp(1.8rem, 7vw, 3.2rem); display: flex; justify-content: center; align-items: center; background-color: var(--color-surface); border-bottom: 4px solid var(--color-accent-primary); color: var(--color-text-bright); }
         .word-letter.space { background-color: transparent; border-bottom: none; }
-        #gameKeyboard { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap-s); max-width: 900px; }
-        #gameKeyboard .key { width: 55px; height: 55px; font-size: 1.5rem; }
+        
+        #gameKeyboard {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: var(--gap-s);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        #gameKeyboard .key {
+            aspect-ratio: 1 / 1;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            padding: 0;
+        }
+
+        #mistakesDisplay { display: flex; gap: 6px; margin-bottom: var(--gap-m); }
+        .mistake-segment { width: 35px; height: 8px; background-color: var(--color-surface); border: 1px solid var(--color-func); transition: background-color 200ms; }
+        .mistake-segment.filled { background-color: var(--color-error); box-shadow: 0 0 5px var(--color-error); }
+
         .ascii-art-container { width: 120px; height: 120px; margin-bottom: var(--gap-m); }
         .ascii-art { position: relative; width: 100%; height: 100%; }
         .ascii-art div { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; }
@@ -89,22 +111,28 @@
             <div id="profiles" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: SELECT PROFILE</span><div class="telemetry-group"><div class="status-light"></div><span>SYSTEM ONLINE</span></div></header>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; width: 100%;"><h2>PERFILES DE USUARIO</h2><ul id="profilesList"></ul><button id="goToPlayerCreateButton" class="interactive-button">CREAR NUEVO PERFIL</button></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r19</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
             </div>
             <div id="player" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: CREATE PROFILE</span><div class="telemetry-group"><div class="status-light"></div><span>SYSTEM ONLINE</span></div></header>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; width: 100%;"><h2>NUEVO JUGADOR</h2><div id="playerNameDisplay">_</div><div id="virtualKeyboard"></div><div style="display: flex; gap: 16px; margin-top: 16px;"><button id="cancelPlayerButton">CANCELAR</button></div></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r19</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
             </div>
             <div id="mainMenu" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: MAIN MENU</span><div class="telemetry-group"><div class="status-light"></div><span>SYSTEM ONLINE</span></div></header>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; width: 100%;"><h2 id="mainMenuHeader"></h2><div id="levelGrid"></div><button id="backToProfilesButton" style="margin-top: 16px;">VOLVER A PERFILES</button></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r19</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
             </div>
             <div id="game" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: GAME ACTIVE</span><div class="telemetry-group"><span>CPU</span><div class="telemetry-bars"><div class="telemetry-bar cpu"></div></div><span>MEM</span><div class="telemetry-bars"><div class="telemetry-bar mem"></div></div></div></header>
-                <div id="holographic-panel"><h2>DESCIFRAR T&Eacute;RMINO</h2><p id="gameDefinition"></p><div id="wordDisplay"></div><div id="gameKeyboard"></div></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r19</footer>
+                <div id="holographic-panel">
+                    <h2>DESCIFRAR T&Eacute;RMINO</h2>
+                    <div id="mistakesDisplay"></div>
+                    <p id="gameDefinition"></p>
+                    <div id="wordDisplay"></div>
+                    <div id="gameKeyboard"></div>
+                </div>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
             </div>
             <div id="victory" class="window"><div class="ascii-art-container"><div class="ascii-art ascii-art-victory"><div></div></div></div><h1 style="color: var(--color-success);">N&Uacute;CLEO ESTABLE</h1><h2>VICTORIA</h2><p>HAS ADIVINADO EL T&Eacute;RMINO CORRECTAMENTE.</p><button id="victoryToMenuButton">VOLVER AL MEN&Uacute;</button></div>
             <div id="gameOver" class="window"><div class="ascii-art-container"><div class="ascii-art ascii-art-defeat"><div></div></div></div><h1 style="color: var(--color-error);">FALLO CR&Iacute;TICO</h1><h2>DERROTA</h2><p id="gameOverCorrectWord"></p><button id="gameOverToMenuButton">REINTENTAR DESDE EL MEN&Uacute;</button></div>
@@ -115,16 +143,15 @@
         (function() {
             'use strict';
             document.addEventListener('DOMContentLoaded', function() {
-                var state = { currentWindow: 'preload', activeProfile: null, profiles: {}, newPlayerName: '', isShiftActive: false, game: { prngState: 0, sessionPlayedWords: { facil: [], medio: [], dificil: [] }, currentDifficulty: null, difficultyTiers: { facil: [ { term: 'RAM', definition: 'MEMORIA VOL\u00c1TIL DE ACCESO ALEATORIO.' }, { term: 'ROM', definition: 'MEMORIA NO VOL\u00c1TIL DE SOLO LECTURA.' }, { term: 'HDD', definition: 'DISCO DURO MEC\u00c1NICO CON PLATOS GIRATORIOS.' }, { term: 'SSD', definition: 'UNIDAD DE ESTADO S\u00d3LIDO SIN PARTES M\u00d3VILES.' }, { term: 'USB', definition: 'EST\u00c1NDAR DE BUS SERIE UNIVERSAL PARA CONECTAR DISPOSITIVOS.' }, { term: 'RAID', definition: 'CONJUNTO REDUNDANTE DE DISCOS INDEPENDIENTES.' }, { term: 'NUBE', definition: 'ALMACENAMIENTO DE DATOS EN SERVIDORES REMOTOS.' }, { term: 'BIOS', definition: 'SISTEMA B\u00c1SICO DE ENTRADA/SALIDA EN LA PLACA BASE.' }, { term: 'BIT', definition: 'LA UNIDAD DE INFORMACI\u00d3N M\u00c1S PEQUE\u00d1A.' }, { term: 'BYTE', definition: 'CONJUNTO DE 8 BITS QUE REPRESENTA UN CAR\u00c1CTER.' }, { term: 'LAN', definition: 'RED DE \u00c1REA LOCAL.' }, { term: 'WAN', definition: 'RED DE \u00c1REA AMPLIA.' }, { term: 'IP', definition: 'DIRECCI\u00d3N DE PROTOCOLO DE INTERNET.' }, { term: 'MAC', definition: 'DIRECCI\u00d3N DE CONTROL DE ACCESO AL MEDIO.' }, { term: 'DNS', definition: 'SISTEMA DE NOMBRES DE DOMINIO.' }, { term: 'FTP', definition: 'PROTOCOLO DE TRANSFERENCIA DE ARCHIVOS.' }, { term: 'CPU', definition: 'UNIDAD CENTRAL DE PROCESAMIENTO.' }, { term: 'GPU', definition: 'UNIDAD DE PROCESAMIENTO GR\u00c1FICO.' }, { term: 'OS', definition: 'SISTEMA OPERATIVO.' }, { term: 'GUI', definition: 'INTERFAZ GR\u00c1FICA DE USUARIO.' }, { term: 'API', definition: 'INTERFAZ DE PROGRAMACI\u00d3N DE APLICACIONES.' }, { term: 'JSON', definition: 'NOTACI\u00d3N DE OBJETOS DE JAVASCRIPT.' }, { term: 'XML', definition: 'LENGUAJE DE MARCADO EXTENSIBLE.' }, { term: 'HTML', definition: 'LENGUAJE DE MARCADO DE HIPERTEXTO.' }, { term: 'CSS', definition: 'HOJAS DE ESTILO EN CASCADA.' }, { term: 'BUG', definition: 'ERROR O FALLO EN UN PROGRAMA.' }, { term: 'LOG', definition: 'REGISTRO DE EVENTOS DE UN SISTEMA.' }, { term: 'WIFI', definition: 'TECNOLOG\u00cdA DE RED INAL\u00c1MBRICA.' }, { term: 'URL', definition: 'LOCALIZADOR UNIFORME DE RECURSOS.' }, { term: 'PING', definition: 'UTILIDAD PARA PROBAR LA CONECTIVIDAD DE RED.' } ], medio: [ { term: 'CACHE', definition: 'MEMORIA R\u00c1PIDA PARA DATOS DE ACCESO FRECUENTE.' }, { term: 'SECTOR', definition: 'LA SUBDIVISI\u00d3N M\u00c1S PEQUE\u00d1A DE UNA PISTA EN UN DISCO.' }, { term: 'CLUSTER', definition: 'CONJUNTO DE SECTORES DE DISCO TRATADOS COMO UNA UNIDAD.' }, { term: 'BACKUP', definition: 'COPIA DE SEGURIDAD DE DATOS PARA RESTAURACI\u00d3N.' }, { term: 'MEMORIA', definition: 'COMPONENTE QUE ALMACENA DATOS PARA ACCESO R\u00c1PIDO POR LA CPU.' }, { term: 'VOLUMEN', definition: 'UN \u00c1REA DE ALMACENAMIENTO \u00daNICA Y ACCESIBLE CON UN SISTEMA DE ARCHIVOS.' }, { term: 'VIRTUAL', definition: 'MEMORIA QUE SIMULA SER RAM USANDO ESPACIO EN DISCO.' }, { term: 'HIBRIDO', definition: 'UNIDAD DE ALMACENAMIENTO QUE COMBINA HDD Y SSD.' }, { term: 'SATA', definition: 'INTERFAZ PARA CONECTAR DISPOSITIVOS DE ALMACENAMIENTO MASIVO.' }, { term: 'FAT32', definition: 'UN SISTEMA DE ARCHIVOS COM\u00daN PARA UNIDADES EXTRA\u00cdBLES.' }, { term: 'KERNEL', definition: 'N\u00daCLEO DE UN SISTEMA OPERATIVO.' }, { term: 'DRIVER', definition: 'SOFTWARE QUE CONTROLA UN DISPOSITIVO DE HARDWARE.' }, { term: 'ROUTER', definition: 'DISPOSITIVO QUE ENV\u00cdA PAQUETES DE DATOS ENTRE REDES.' }, { term: 'SWITCH', definition: 'DISPOSITIVO QUE CONECTA DISPOSITIVOS EN UNA RED.' }, { term: 'MODEM', definition: 'DISPOSITIVO QUE MODULA Y DEMODULA SE\u00d1ALES.' }, { term: 'CLIENTE', definition: 'APLICACI\u00d3N O SISTEMA QUE ACCEDE A UN SERVICIO EN UN SERVIDOR.' }, { term: 'SERVIDOR', definition: 'SISTEMA QUE PROPORCIONA SERVICIOS A CLIENTES.' }, { term: 'FIREWALL', definition: 'SISTEMA DE SEGURIDAD QUE CONTROLA EL TR\u00c1FICO DE RED.' }, { term: 'CODIGO', definition: 'CONJUNTO DE INSTRUCCIONES PARA UN ORDENADOR.' }, { term: 'SCRIPT', definition: 'PROGRAMA QUE SE INTERPRETA EN LUGAR DE COMPILARSE.' }, { term: 'COMPILAR', definition: 'TRADUCIR C\u00d3DIGO FUENTE A C\u00d3DIGO M\u00c1QUINA.' }, { term: 'VARIABLE', definition: 'ESPACIO EN MEMORIA CON UN NOMBRE Y UN VALOR.' }, { term: 'FUNCION', definition: 'BLOQUE DE C\u00d3DIGO REUTILIZABLE QUE REALIZA UNA TAREA.' }, { term: 'ALGORITMO', definition: 'CONJUNTO DE PASOS PARA RESOLVER UN PROBLEMA.' }, { term: 'FRAMEWORK', definition: 'CONJUNTO DE HERRAMIENTAS Y LIBRER\u00cdAS PARA DESARROLLAR SOFTWARE.' }, { term: 'LIBRERIA', definition: 'COLECCI\u00d3N DE FUNCIONES Y RUTINAS PREESCRITAS.' }, { term: 'BOOLEANO', definition: 'TIPO DE DATO CON VALORES VERDADERO O FALSO.' }, { term: 'ITERAR', definition: 'REPETIR UN PROCESO O CONJUNTO DE INSTRUCCIONES.' }, { term: 'RECURSION', definition: 'T\u00c9CNICA DONDE UNA FUNCI\u00d3N SE LLAMA A S\u00cd MISMA.' }, { term: 'DEPURAR', definition: 'PROCESO DE ENCONTRAR Y CORREGIR ERRORES.' } ], dificil: [ { term: 'PARTICION', definition: 'DIVISI\u00d3N L\u00d3GICA DE UNA UNIDAD DE ALMACENAMIENTO F\u00cdSICA.' }, { term: 'VOLATIL', definition: 'TIPO DE MEMORIA QUE PIERDE SUS DATOS CUANDO SE CORTA LA ENERG\u00cdA.' }, { term: 'SECUENCIAL', definition: 'ACCESO A DATOS QUE SE REALIZA EN UN ORDEN PREDETERMINADO.' }, { term: 'PERSISTENCIA', definition: 'LA CARACTER\u00cdSTICA DE LOS DATOS QUE SOBREVIVEN DESPU\u00c9S DE QUE EL PROCESO TERMINA.' }, { term: 'REDUNDANCIA', definition: 'DUPLICACI\u00d3N DE COMPONENTES O DATOS CR\u00cdTICOS PARA AUMENTAR LA FIABILIDAD.' }, { term: 'ENCRIPTACION', definition: 'PROCESO DE CODIFICAR DATOS PARA QUE SOLO PARTES AUTORIZADAS PUEDAN LEERLOS.' }, { term: 'INSTANTANEA', definition: 'COPIA DEL ESTADO DE UN SISTEMA EN UN MOMENTO DETERMINADO, TAMBI\u00c9N LLAMADA SNAPSHOT.' }, { term: 'JERARQUICO', definition: 'MODELO DE SISTEMA DE ARCHIVOS QUE ORGANIZA DATOS EN UNA ESTRUCTURA DE \u00c1RBOL.' }, { term: 'DESFRAGMENTAR', definition: 'PROCESO DE REORGANIZAR LOS DATOS EN UN DISCO PARA QUE LAS PARTES DE CADA ARCHIVO EST\u00c9N CONTIGUAS.' }, { term: 'ALMACENAMIENTO', definition: 'RETENCI\u00d3N DE DATOS RECUPERABLES EN MEDIOS DIGITALES.' }, { term: 'VIRTUALIZACION', definition: 'CREACI\u00d3N DE UNA VERSI\u00d3N VIRTUAL DE ALGO, COMO UN SERVIDOR O SISTEMA OPERATIVO.' }, { term: 'CONTENEDOR', definition: 'UNIDAD EST\u00c1NDAR DE SOFTWARE QUE EMPAQUETA C\u00d3DIGO Y SUS DEPENDENCIAS.' }, { term: 'ORQUESTACION', definition: 'AUTOMATIZACI\u00d3N DE LA GESTI\u00d3N, COORDINACI\u00d3N Y DESPLIEGUE DE CONTENEDORES.' }, { term: 'MICROSERVICIOS', definition: 'ARQUITECTURA DONDE UNA APLICACI\u00d3N SE COMPONE DE PEQUE\u00d1OS SERVICIOS INDEPENDIENTES.' }, { term: 'AUTENTICACION', definition: 'PROCESO DE VERIFICAR LA IDENTIDAD DE UN USUARIO.' }, { term: 'AUTORIZACION', definition: 'PROCESO DE OTORGAR PERMISOS A UN USUARIO AUTENTICADO.' }, { term: 'PROTOCOLO', definition: 'CONJUNTO DE REGLAS QUE GOBIERNAN LA COMUNICACI\u00d3N DE DATOS.' }, { term: 'LATENCIA', definition: 'RETRASO EN LA TRANSMISI\u00d3N DE DATOS EN UNA RED.' }, { term: 'ANCHO DE BANDA', definition: 'CAPACIDAD M\u00c1XIMA DE TRANSFERENCIA DE DATOS DE UNA RED.' }, { term: 'POLIMORFISMO', definition: 'CONCEPTO DE PROGRAMACI\u00d3N ORIENTADA A OBJETOS PARA PROCESAR OBJETOS DE FORMA DIFERENTE SEG\u00daN SU TIPO.' }, { term: 'HERENCIA', definition: 'MECANISMO POR EL CUAL UNA CLASE ADQUIERE PROPIEDADES DE OTRA CLASE.' }, { term: 'ENCAPSULACION', definition: 'OCULTACI\u00d3N DE LOS DETALLES INTERNOS DE UN OBJETO Y EXPOSICI\u00d3N DE UNA INTERFAZ P\u00daBLICA.' }, { term: 'ABSTRACCION', definition: 'PROCESO DE SIMPLIFICAR SISTEMAS COMPLEJOS MOSTRANDO SOLO LA INFORMACI\u00d3N RELEVANTE.' }, { term: 'COMPILADOR JIT', definition: 'COMPILADOR "JUST-IN-TIME" QUE COMPILA C\u00d3DIGO DURANTE LA EJECUCI\u00d3N.' }, { term: 'RECOLECCION DE BASURA', definition: 'FORMA DE GESTI\u00d3N AUTOM\u00c1TICA DE MEMORIA.' }, { term: 'HILO DE EJECUCION', definition: 'LA SECUENCIA M\u00c1S PEQUE\u00d1A DE INSTRUCCIONES PROGRAMADAS QUE PUEDE SER GESTIONADA DE FORMA INDEPENDIENTE.' }, { term: 'INTERBLOQUEO', definition: 'SITUACI\u00d3N EN LA QUE DOS O M\u00c1S PROCESOS SE BLOQUEAN MUTUamente, ESPERANDO RECURSOS.' }, { term: 'SEMAFORO', definition: 'VARIABLE UTILIZADA PARA CONTROLAR EL ACCESO A UN RECURSO COM\u00daN POR M\u00daLTIPLES PROCESOS.' }, { term: 'CRIPTOGRAFIA', definition: 'PR\u00c1CTICA Y ESTUDIO DE T\u00c9CNICAS PARA LA COMUNICACI\u00d3N SEGURA.' }, { term: 'ESTEGANOGRAFIA', definition: 'T\u00c9CNICA DE OCULTAR MENSAJES DENTRO DE OTROS OBJETOS O ARCHIVOS.' } ] }, currentWord: '', currentDefinition: '', guessedLetters: [], mistakes: 0, maxMistakes: 6, isOver: false } };
+                var state = { currentWindow: 'preload', activeProfile: null, profiles: {}, newPlayerName: '', isShiftActive: false, game: { prngState: 0, sessionPlayedWords: { facil: [], medio: [], dificil: [] }, currentDifficulty: null, difficultyTiers: { facil: [ { term: 'RAM', definition: 'MEMORIA VOL\u00c1TIL DE ACCESO ALEATORIO.' }, { term: 'ROM', definition: 'MEMORIA NO VOL\u00c1TIL DE SOLO LECTURA.' }, { term: 'HDD', definition: 'DISCO DURO MEC\u00c1NICO CON PLATOS GIRATORIOS.' }, { term: 'SSD', definition: 'UNIDAD DE ESTADO S\u00d3LIDO SIN PARTES M\u00d3VILES.' }, { term: 'USB', definition: 'EST\u00c1NDAR DE BUS SERIE UNIVERSAL PARA CONECTAR DISPOSITIVOS.' }, { term: 'RAID', definition: 'CONJUNTO REDUNDANTE DE DISCOS INDEPENDIENTES.' }, { term: 'NUBE', definition: 'ALMACENAMIENTO DE DATOS EN SERVIDORES REMOTOS.' }, { term: 'BIOS', definition: 'SISTEMA B\u00c1SICO DE ENTRADA/SALIDA EN LA PLACA BASE.' }, { term: 'BIT', definition: 'LA UNIDAD DE INFORMACI\u00d3N M\u00c1S PEQUE\u00d1A.' }, { term: 'BYTE', definition: 'CONJUNTO DE 8 BITS QUE REPRESENTA UN CAR\u00c1CTER.' }, { term: 'LAN', definition: 'RED DE \u00c1REA LOCAL.' }, { term: 'WAN', definition: 'RED DE \u00c1REA AMPLIA.' }, { term: 'IP', definition: 'DIRECCI\u00d3N DE PROTOCOLO DE INTERNET.' }, { term: 'MAC', definition: 'DIRECCI\u00d3N DE CONTROL DE ACCESO AL MEDIO.' }, { term: 'DNS', definition: 'SISTEMA DE NOMBRES DE DOMINIO.' }, { term: 'FTP', definition: 'PROTOCOLO DE TRANSFERENCIA DE ARCHIVOS.' }, { term: 'CPU', definition: 'UNIDAD CENTRAL DE PROCESAMIENTO.' }, { term: 'GPU', definition: 'UNIDAD DE PROCESAMIENTO GR\u00c1FICO.' }, { term: 'OS', definition: 'SISTEMA OPERATIVO.' }, { term: 'GUI', definition: 'INTERFAZ GR\u00c1FICA DE USUARIO.' }, { term: 'API', definition: 'INTERFAZ DE PROGRAMACI\u00d3N DE APLICACIONES.' }, { term: 'JSON', definition: 'NOTACI\u00d3N DE OBJETOS DE JAVASCRIPT.' }, { term: 'XML', definition: 'LENGUAJE DE MARCADO EXTENSIBLE.' }, { term: 'HTML', definition: 'LENGUAJE DE MARCADO DE HIPERTEXTO.' }, { term: 'CSS', definition: 'HOJAS DE ESTILO EN CASCADA.' }, { term: 'BUG', definition: 'ERROR O FALLO EN UN PROGRAMA.' }, { term: 'LOG', definition: 'REGISTRO DE EVENTOS DE UN SISTEMA.' }, { term: 'WIFI', definition: 'TECNOLOG\u00cdA DE RED INAL\u00c1MBRICA.' }, { term: 'URL', definition: 'LOCALIZADOR UNIFORME DE RECURSOS.' }, { term: 'PING', definition: 'UTILIDAD PARA PROBAR LA CONECTIVIDAD DE RED.' } ], medio: [ { term: 'CACHE', definition: 'MEMORIA R\u00c1PIDA PARA DATOS DE ACCESO FRECUENTE.' }, { term: 'SECTOR', definition: 'LA SUBDIVISI\u00d3N M\u00c1S PEQUE\u00d1A DE UNA PISTA EN UN DISCO.' }, { term: 'CLUSTER', definition: 'CONJUNTO DE SECTORES DE DISCO TRATADOS COMO UNA UNIDAD.' }, { term: 'BACKUP', definition: 'COPIA DE SEGURIDAD DE DATOS PARA RESTAURACI\u00d3N.' }, { term: 'MEMORIA', definition: 'COMPONENTE QUE ALMACENA DATOS PARA ACCESO R\u00c1PIDO POR LA CPU.' }, { term: 'VOLUMEN', definition: 'UN \u00c1REA DE ALMACENAMIENTO \u00daNICA Y ACCESIBLE CON UN SISTEMA DE ARCHIVOS.' }, { term: 'VIRTUAL', definition: 'MEMORIA QUE SIMULA SER RAM USANDO ESPACIO EN DISCO.' }, { term: 'HIBRIDO', definition: 'UNIDAD DE ALMACENAMIENTO QUE COMBINA HDD Y SSD.' }, { term: 'SATA', definition: 'INTERFAZ PARA CONECTAR DISPOSITIVOS DE ALMACENAMIENTO MASIVO.' }, { term: 'FAT32', definition: 'UN SISTEMA DE ARCHIVOS COM\u00daN PARA UNIDADES EXTRA\u00cdBLES.' }, { term: 'KERNEL', definition: 'N\u00daCLEO DE UN SISTEMA OPERATIVO.' }, { term: 'DRIVER', definition: 'SOFTWARE QUE CONTROLA UN DISPOSITIVO DE HARDWARE.' }, { term: 'ROUTER', definition: 'DISPOSITIVO QUE ENV\u00cdA PAQUETES DE DATOS ENTRE REDES.' }, { term: 'SWITCH', definition: 'DISPOSITIVO QUE CONECTA DISPOSITIVOS EN UNA RED.' }, { term: 'MODEM', definition: 'DISPOSITIVO QUE MODULA Y DEMODULA SE\u00d1ALES.' }, { term: 'CLIENTE', definition: 'APLICACI\u00d3N O SISTEMA QUE ACCEDE A UN SERVICIO EN UN SERVIDOR.' }, { term: 'SERVIDOR', definition: 'SISTEMA QUE PROPORCIONA SERVICIOS A CLIENTES.' }, { term: 'FIREWALL', definition: 'SISTEMA DE SEGURIDAD QUE CONTROLA EL TR\u00c1FICO DE RED.' }, { term: 'CODIGO', definition: 'CONJUNTO DE INSTRUCCIONES PARA UN ORDENADOR.' }, { term: 'SCRIPT', definition: 'PROGRAMA QUE SE INTERPRETA EN LUGAR DE COMPILARSE.' }, { term: 'COMPILAR', definition: 'TRADUCIR C\u00d3DIGO FUENTE A C\u00d3DIGO M\u00c1QUINA.' }, { term: 'VARIABLE', definition: 'ESPACIO EN MEMORIA CON UN NOMBRE Y UN VALOR.' }, { term: 'FUNCION', definition: 'BLOQUE DE C\u00d3DIGO REUTILIZABLE QUE REALIZA UNA TAREA.' }, { term: 'ALGORITMO', definition: 'CONJUNTO DE PASOS PARA RESOLVER UN PROBLEMA.' }, { term: 'FRAMEWORK', definition: 'CONJUNTO DE HERRAMIENTAS Y LIBRER\u00cdAS PARA DESARROLLAR SOFTWARE.' }, { term: 'LIBRERIA', definition: 'COLECCI\u00d3N DE FUNCIONES Y RUTINAS PREESCRITAS.' }, { term: 'BOOLEANO', definition: 'TIPO DE DATO CON VALORES VERDADERO O FALSO.' }, { term: 'ITERAR', definition: 'REPETIR UN PROCESO O CONJUNTO DE INSTRUCCIONES.' }, { term: 'RECURSION', definition: 'T\u00c9CNICA DONDE UNA FUNCI\u00d3N SE LLAMA A S\u00cd MISMA.' }, { term: 'DEPURAR', definition: 'PROCESO DE ENCONTRAR Y CORREGIR ERRORES.' } ], dificil: [ { term: 'PARTICION', definition: 'DIVISI\u00d3N L\u00d3GICA DE UNA UNIDAD DE ALMACENAMIENTO F\u00cdSICA.' }, { term: 'VOLATIL', definition: 'TIPO DE MEMORIA QUE PIERDE SUS DATOS CUANDO SE CORTA LA ENERG\u00cdA.' }, { term: 'SECUENCIAL', definition: 'ACCESO A DATOS QUE SE REALIZA EN UN ORDEN PREDETERMINADO.' }, { term: 'PERSISTENCIA', definition: 'LA CARACTER\u00cdSTICA DE LOS DATOS QUE SOBREVIVEN DESPU\u00c9S DE QUE EL PROCESO TERMINA.' }, { term: 'REDUNDANCIA', definition: 'DUPLICACI\u00d3N DE COMPONENTES O DATOS CR\u00cdTICOS PARA AUMENTAR LA FIABILIDAD.' }, { term: 'ENCRIPTACION', definition: 'PROCESO DE CODIFICAR DATOS PARA QUE SOLO PARTES AUTORIZADAS PUEDAN LEERLOS.' }, { term: 'INSTANTANEA', definition: 'COPIA DEL ESTADO DE UN SISTEMA EN UN MOMENTO DETERMINADO, TAMBI\u00c9N LLAMADA SNAPSHOT.' }, { term: 'JERARQUICO', definition: 'MODELO DE SISTEMA DE ARCHIVOS QUE ORGANIZA DATOS EN UNA ESTRUCTURA DE \u00c1RBOL.' }, { term: 'DESFRAGMENTAR', definition: 'PROCESO DE REORGANIZAR LOS DATOS EN UN DISCO PARA QUE LAS PARTES DE CADA ARCHIVO EST\u00c9N CONTIGUAS.' }, { term: 'ALMACENAMIENTO', definition: 'RETENCI\u00d3N DE DATOS RECUPERABLES EN MEDIOS DIGITALES.' }, { term: 'VIRTUALIZACION', definition: 'CREACI\u00d3N DE UNA VERSI\u00d3N VIRTUAL DE ALGO, COMO UN SERVIDOR O SISTEMA OPERATIVO.' }, { term: 'CONTENEDOR', definition: 'UNIDAD EST\u00c1NDAR DE SOFTWARE QUE EMPAQUETA C\u00d3DIGO Y SUS DEPENDENCIAS.' }, { term: 'ORQUESTACION', definition: 'AUTOMATIZACI\u00d3N DE LA GESTI\u00d3N, COORDINACI\u00d3N Y DESPLIEGE DE CONTENEDORES.' }, { term: 'MICROSERVICIOS', definition: 'ARQUITECTURA DONDE UNA APLICACI\u00d3N SE COMPONE DE PEQUE\u00d1OS SERVICIOS INDEPENDIENTES.' }, { term: 'AUTENTICACION', definition: 'PROCESO DE VERIFICAR LA IDENTIDAD DE UN USUARIO.' }, { term: 'AUTORIZACION', definition: 'PROCESO DE OTORGAR PERMISOS A UN USUARIO AUTENTICADO.' }, { term: 'PROTOCOLO', definition: 'CONJUNTO DE REGLAS QUE GOBIERNAN LA COMUNICACI\u00d3N DE DATOS.' }, { term: 'LATENCIA', definition: 'RETRASO EN LA TRANSMISI\u00d3N DE DATOS EN UNA RED.' }, { term: 'ANCHO DE BANDA', definition: 'CAPACIDAD M\u00c1XIMA DE TRANSFERENCIA DE DATOS DE UNA RED.' }, { term: 'POLIMORFISMO', definition: 'CONCEPTO DE PROGRAMACI\u00d3N ORIENTADA A OBJETOS PARA PROCESAR OBJETOS DE FORMA DIFERENTE SEG\u00daN SU TIPO.' }, { term: 'HERENCIA', definition: 'MECANISMO POR EL CUAL UNA CLASE ADQUIERE PROPIEDADES DE OTRA CLASE.' }, { term: 'ENCAPSULACION', definition: 'OCULTACI\u00d3N DE LOS DETALLES INTERNOS DE UN OBJETO Y EXPOSICI\u00d3N DE UNA INTERFAZ P\u00daBLICA.' }, { term: 'ABSTRACCION', definition: 'PROCESO DE SIMPLIFICAR SISTEMAS COMPLEJOS MOSTRANDO SOLO LA INFORMACI\u00d3N RELEVANTE.' }, { term: 'COMPILADOR JIT', definition: 'COMPILADOR "JUST-IN-TIME" QUE COMPILA C\u00d3DIGO DURANTE LA EJECUCI\u00d3N.' }, { term: 'RECOLECCION DE BASURA', definition: 'FORMA DE GESTI\u00d3N AUTOM\u00c1TICA DE MEMORIA.' }, { term: 'HILO DE EJECUCION', definition: 'LA SECUENCIA M\u00c1S PEQUE\u00d1A DE INSTRUCCIONES PROGRAMADAS QUE PUEDE SER GESTIONADA DE FORMA INDEPENDIENTE.' }, { term: 'INTERBLOQUEO', definition: 'SITUACI\u00d3N EN LA QUE DOS O M\u00c1S PROCESOS SE BLOQUEAN MUTUAMENTE, ESPERANDO RECURSOS.' }, { term: 'SEMAFORO', definition: 'VARIABLE UTILIZADA PARA CONTROLAR EL ACCESO A UN RECURSO COM\u00daN POR M\u00daLTIPLES PROCESOS.' }, { term: 'CRIPTOGRAFIA', definition: 'PR\u00c1CTICA Y ESTUDIO DE T\u00c9CNICAS PARA LA COMUNICACI\u00d3N SEGURA.' }, { term: 'ESTEGANOGRAFIA', definition: 'T\u00c9CNICA DE OCULTAR MENSAJES DENTRO DE OTROS OBJETOS O ARCHIVOS.' } ] }, currentWord: '', currentDefinition: '', guessedLetters: [], mistakes: 0, maxMistakes: 6, isOver: false } };
                 var windows = { preload: document.getElementById('preload'), title: document.getElementById('title'), profiles: document.getElementById('profiles'), player: document.getElementById('player'), mainMenu: document.getElementById('mainMenu'), game: document.getElementById('game'), victory: document.getElementById('victory'), gameOver: document.getElementById('gameOver'), fullscreenOverlay: document.getElementById('fullscreenOverlay') };
-                var ui = { levelGrid: document.getElementById('levelGrid'), profilesList: document.getElementById('profilesList'), goToPlayerCreateButton: document.getElementById('goToPlayerCreateButton'), mainMenuHeader: document.getElementById('mainMenuHeader'), backToProfilesButton: document.getElementById('backToProfilesButton'), playerNameDisplay: document.getElementById('playerNameDisplay'), virtualKeyboard: document.getElementById('virtualKeyboard'), cancelPlayerButton: document.getElementById('cancelPlayerButton'), gameDefinition: document.getElementById('gameDefinition'), wordDisplay: document.getElementById('wordDisplay'), gameKeyboard: document.getElementById('gameKeyboard'), victoryToMenuButton: document.getElementById('victoryToMenuButton'), gameOverToMenuButton: document.getElementById('gameOverToMenuButton'), gameOverCorrectWord: document.getElementById('gameOverCorrectWord'), reEnterFullscreenButton: document.getElementById('reEnterFullscreenButton'), holographicPanel: document.getElementById('holographic-panel') };
+                var ui = { levelGrid: document.getElementById('levelGrid'), profilesList: document.getElementById('profilesList'), goToPlayerCreateButton: document.getElementById('goToPlayerCreateButton'), mainMenuHeader: document.getElementById('mainMenuHeader'), backToProfilesButton: document.getElementById('backToProfilesButton'), playerNameDisplay: document.getElementById('playerNameDisplay'), virtualKeyboard: document.getElementById('virtualKeyboard'), cancelPlayerButton: document.getElementById('cancelPlayerButton'), gameDefinition: document.getElementById('gameDefinition'), wordDisplay: document.getElementById('wordDisplay'), gameKeyboard: document.getElementById('gameKeyboard'), victoryToMenuButton: document.getElementById('victoryToMenuButton'), gameOverToMenuButton: document.getElementById('gameOverToMenuButton'), gameOverCorrectWord: document.getElementById('gameOverCorrectWord'), reEnterFullscreenButton: document.getElementById('reEnterFullscreenButton'), holographicPanel: document.getElementById('holographic-panel'), mistakesDisplay: document.getElementById('mistakesDisplay') };
                 var PLAYER_KEYBOARD_LAYOUT = ['Q','W','E','R','T','Y','U','Backspace','A','S','D','F','G','H','Enter','I','J','K','L','M','\u00d1','O','P','Shift','Z','X','C','V','B','N'];
                 var GAME_KEYBOARD_CHARS = 'ABCDEFGHIJKLMN\u00d1OPQRSTUVWXYZ';
                 var STORAGE_KEY = 'analyzer:profiles';
                 function saveProfilesToStorage() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.profiles)); } catch (e) { console.error('[ERR][STORAGE] FALLO AL GUARDAR PERFILES.', e); } }
                 function loadProfilesFromStorage() { try { var storedData = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (!storedData) { state.profiles = {}; return; } if (Array.isArray(storedData)) { console.warn('[STORAGE][MIGRATE] Detectado formato de datos antiguo. Migrando...'); var newProfiles = {}; storedData.forEach(function(profileName) { newProfiles[profileName] = { solvedWords: { facil: [], medio: [], dificil: [] } }; }); state.profiles = newProfiles; saveProfilesToStorage(); } else { state.profiles = storedData; } } catch (e) { console.error('[ERR][STORAGE] FALLO AL CARGAR PERFILES.', e); state.profiles = {}; } }
                 
-                // MODIFICADO: Lógica de showWindow refactorizada
                 function showWindow(windowId) {
                     for (var id in windows) {
                         windows[id].classList.remove('active');
@@ -139,18 +166,130 @@
                 function renderProfiles() { ui.profilesList.innerHTML = ''; Object.keys(state.profiles).forEach(function(profileName) { var listItem = document.createElement('li'); listItem.className = 'profile-entry'; var profileButton = document.createElement('button'); profileButton.className = 'interactive-button profile-button'; profileButton.textContent = profileName; profileButton.setAttribute('data-profile-name', profileName); var deleteButton = document.createElement('button'); deleteButton.className = 'delete-button'; deleteButton.textContent = 'X'; deleteButton.setAttribute('data-profile-name', profileName); listItem.appendChild(profileButton); listItem.appendChild(deleteButton); ui.profilesList.appendChild(listItem); }); }
                 function renderLevelProgress() { if (!state.activeProfile || !state.profiles[state.activeProfile]) return; var solvedData = state.profiles[state.activeProfile].solvedWords; document.querySelectorAll('#levelGrid button').forEach(function(button) { var difficulty = button.getAttribute('data-difficulty'); var container = button.querySelector('.progress-cubes-container'); if (!difficulty || !container || !solvedData[difficulty]) return; container.innerHTML = ''; var solvedCount = solvedData[difficulty].length; for (var i = 0; i < solvedCount; i++) { var cube = document.createElement('div'); cube.className = 'progress-cube'; if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { cube.style.animation = 'cube-flicker 4s infinite'; cube.style.animationDelay = '-' + Math.random() * 4 + 's'; } container.appendChild(cube); } }); }
                 function populateLevelGrid() { ui.levelGrid.innerHTML = ''; Object.keys(state.game.difficultyTiers).forEach(function(difficulty) { var levelButton = document.createElement('button'); levelButton.className = 'interactive-button'; levelButton.setAttribute('data-difficulty', difficulty); var content = document.createElement('div'); content.className = 'level-button-content'; var text = document.createElement('span'); text.textContent = 'NIVEL ' + difficulty.toUpperCase(); var cubes = document.createElement('div'); cubes.className = 'progress-cubes-container'; content.appendChild(text); content.appendChild(cubes); levelButton.appendChild(content); ui.levelGrid.appendChild(levelButton); }); }
+                
                 var GameManager = {
                     xorshift32: function(seed) { var x = seed; x ^= x << 13; x ^= x >> 17; x ^= x << 5; return x; },
                     getRandomInt: function(max) { state.game.prngState = this.xorshift32(state.game.prngState); return (state.game.prngState & 0x7FFFFFFF) % max; },
-                    startGame: function(difficulty) { var wordList = state.game.difficultyTiers[difficulty]; var playedWords = state.game.sessionPlayedWords[difficulty]; var availableWords = wordList.filter(function(wordObj) { return playedWords.indexOf(wordObj.term) === -1; }); if (availableWords.length === 0) { state.game.sessionPlayedWords[difficulty] = []; availableWords = wordList; } var randomIndex = this.getRandomInt(availableWords.length); var gameData = availableWords[randomIndex]; state.game.sessionPlayedWords[difficulty].push(gameData.term); state.game.currentWord = gameData.term; state.game.currentDifficulty = difficulty; state.game.currentDefinition = gameData.definition; state.game.guessedLetters = []; state.game.mistakes = 0; state.game.isOver = false; ui.gameDefinition.textContent = state.game.currentDefinition; this.renderWordDisplay(); this.renderGameKeyboard(); showWindow('game'); },
-                    handleGuess: function(letter) { if (state.game.isOver || state.game.guessedLetters.indexOf(letter) !== -1) return; state.game.guessedLetters.push(letter); var isCorrect = state.game.currentWord.indexOf(letter) !== -1; if (isCorrect) { this.renderWordDisplay(); } else { state.game.mistakes++; if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { ui.holographicPanel.classList.add('glitch-active'); ui.holographicPanel.style.animationDuration = (300 - (state.game.mistakes * 40)) + 'ms'; setTimeout(function() { ui.holographicPanel.classList.remove('glitch-active'); }, 300); } else { document.body.style.backgroundColor = 'var(--color-error)'; setTimeout(function(){ document.body.style.backgroundColor = 'var(--color-bg-primary)'; }, 150); } } this.renderGameKeyboard(); this.checkGameState(); },
-                    checkGameState: function() { var wordSolved = true; for(var i = 0; i < state.game.currentWord.length; i++) { var char = state.game.currentWord[i]; if(char !== ' ' && state.game.guessedLetters.indexOf(char) === -1) { wordSolved = false; break; } } if (wordSolved) { this.endGame(true); } else if (state.game.mistakes >= state.game.maxMistakes) { this.endGame(false); } },
-                    endGame: function(didWin) { state.game.isOver = true; if (didWin) { var profile = state.profiles[state.activeProfile]; var solvedList = profile.solvedWords[state.game.currentDifficulty]; if (solvedList.indexOf(state.game.currentWord) === -1) { solvedList.push(state.game.currentWord); saveProfilesToStorage(); } } setTimeout(function() { if (didWin) { showWindow('victory'); } else { ui.gameOverCorrectWord.textContent = 'EL T\u00c9RMINO ERA: ' + state.game.currentWord; showWindow('gameOver'); } }, 500); },
-                    renderWordDisplay: function() { ui.wordDisplay.innerHTML = ''; state.game.currentWord.split('').forEach(function(char) { var letterDiv = document.createElement('div'); letterDiv.className = 'word-letter'; if (char === ' ') { letterDiv.classList.add('space'); } else { letterDiv.textContent = state.game.guessedLetters.indexOf(char) !== -1 ? char : ''; } ui.wordDisplay.appendChild(letterDiv); }); },
-                    renderGameKeyboard: function() { ui.gameKeyboard.innerHTML = ''; GAME_KEYBOARD_CHARS.split('').forEach(function(char) { var keyButton = document.createElement('button'); keyButton.className = 'interactive-button key'; keyButton.textContent = char; keyButton.setAttribute('data-key', char); if (state.game.guessedLetters.indexOf(char) !== -1) { keyButton.disabled = true; } ui.gameKeyboard.appendChild(keyButton); }); }
+                    startGame: function(difficulty) {
+                        var wordList = state.game.difficultyTiers[difficulty];
+                        var playedWords = state.game.sessionPlayedWords[difficulty];
+                        var availableWords = wordList.filter(function(wordObj) { return playedWords.indexOf(wordObj.term) === -1; });
+                        if (availableWords.length === 0) { state.game.sessionPlayedWords[difficulty] = []; availableWords = wordList; }
+                        var randomIndex = this.getRandomInt(availableWords.length);
+                        var gameData = availableWords[randomIndex];
+                        
+                        state.game.sessionPlayedWords[difficulty].push(gameData.term);
+                        state.game.currentWord = gameData.term;
+                        state.game.currentDifficulty = difficulty;
+                        state.game.currentDefinition = gameData.definition;
+                        state.game.guessedLetters = [];
+                        state.game.mistakes = 0;
+                        state.game.isOver = false;
+                        
+                        ui.gameDefinition.textContent = state.game.currentDefinition;
+                        this.renderWordDisplay();
+                        this.renderGameKeyboard();
+                        this.renderMistakesDisplay();
+                        showWindow('game');
+                    },
+                    handleGuess: function(letter) {
+                        if (state.game.isOver || state.game.guessedLetters.indexOf(letter) !== -1) return;
+                        
+                        state.game.guessedLetters.push(letter);
+                        var isCorrect = state.game.currentWord.indexOf(letter) !== -1;
+                        
+                        if (isCorrect) {
+                            this.renderWordDisplay();
+                        } else {
+                            state.game.mistakes++;
+                            this.renderMistakesDisplay();
+                            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                                ui.holographicPanel.classList.add('glitch-active');
+                                ui.holographicPanel.style.animationDuration = (300 - (state.game.mistakes * 40)) + 'ms';
+                                setTimeout(function() { ui.holographicPanel.classList.remove('glitch-active'); }, 300);
+                            } else {
+                                document.body.style.backgroundColor = 'var(--color-error)';
+                                setTimeout(function(){ document.body.style.backgroundColor = 'var(--color-bg-primary)'; }, 150);
+                            }
+                        }
+                        this.renderGameKeyboard();
+                        this.checkGameState();
+                    },
+                    checkGameState: function() {
+                        var wordSolved = true;
+                        for(var i = 0; i < state.game.currentWord.length; i++) {
+                            var char = state.game.currentWord[i];
+                            if(char !== ' ' && state.game.guessedLetters.indexOf(char) === -1) {
+                                wordSolved = false;
+                                break;
+                            }
+                        }
+                        if (wordSolved) {
+                            this.endGame(true);
+                        } else if (state.game.mistakes >= state.game.maxMistakes) {
+                            this.endGame(false);
+                        }
+                    },
+                    endGame: function(didWin) {
+                        state.game.isOver = true;
+                        if (didWin) {
+                            var profile = state.profiles[state.activeProfile];
+                            var solvedList = profile.solvedWords[state.game.currentDifficulty];
+                            if (solvedList.indexOf(state.game.currentWord) === -1) {
+                                solvedList.push(state.game.currentWord);
+                                saveProfilesToStorage();
+                            }
+                        }
+                        setTimeout(function() {
+                            if (didWin) {
+                                showWindow('victory');
+                            } else {
+                                ui.gameOverCorrectWord.textContent = 'EL T\u00c9RMINO ERA: ' + state.game.currentWord;
+                                showWindow('gameOver');
+                            }
+                        }, 500);
+                    },
+                    renderWordDisplay: function() {
+                        ui.wordDisplay.innerHTML = '';
+                        state.game.currentWord.split('').forEach(function(char) {
+                            var letterDiv = document.createElement('div');
+                            letterDiv.className = 'word-letter';
+                            if (char === ' ') {
+                                letterDiv.classList.add('space');
+                            } else {
+                                letterDiv.textContent = state.game.guessedLetters.indexOf(char) !== -1 ? char : '';
+                            }
+                            ui.wordDisplay.appendChild(letterDiv);
+                        });
+                    },
+                    renderGameKeyboard: function() {
+                        ui.gameKeyboard.innerHTML = '';
+                        GAME_KEYBOARD_CHARS.split('').forEach(function(char) {
+                            var keyButton = document.createElement('button');
+                            keyButton.className = 'interactive-button key';
+                            keyButton.textContent = char;
+                            keyButton.setAttribute('data-key', char);
+                            if (state.game.guessedLetters.indexOf(char) !== -1) {
+                                keyButton.disabled = true;
+                            }
+                            ui.gameKeyboard.appendChild(keyButton);
+                        });
+                    },
+                    renderMistakesDisplay: function() {
+                        ui.mistakesDisplay.innerHTML = '';
+                        for (var i = 0; i < state.game.maxMistakes; i++) {
+                            var segment = document.createElement('div');
+                            segment.className = 'mistake-segment';
+                            if (i < state.game.mistakes) {
+                                segment.classList.add('filled');
+                            }
+                            ui.mistakesDisplay.appendChild(segment);
+                        }
+                    }
                 };
+
                 function init() {
-                    console.log('[BOOT][INFO] INICIALIZANDO HANGMAN v4.4.0-r19 (FOUC FIX)...');
+                    console.log('[BOOT][INFO] INICIALIZANDO HANGMAN v4.4.0-r24 (REGRESSION_FIX)...');
                     state.game.prngState = new Date().getTime();
                     loadProfilesFromStorage(); populateLevelGrid(); renderProfiles(); renderPlayerKeyboard();
                     setTimeout(function() { showWindow('title'); }, 1000);
