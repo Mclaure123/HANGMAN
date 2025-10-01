@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HANGMAN v4.4.0 (r24 - REGRESSION_FIX)</title>
+    <title>HANGMAN v4.4.0 (r25 - HEX_HUD_UPGRADE)</title>
     <style>
         :root {
             --color-bg-primary: #0A0A0A; --color-surface: #141414; --color-func: #2A2A2A; --color-text-passive: #B0B0B0; --color-text-bright: #FFFFFF; --color-accent-primary: #00FFFF; --color-accent-bios: #00FF8A; --color-error: #FF414B; --color-success: #39FF14; --color-accent-gold: #FFD700; --gap-s: 8px; --gap-m: 16px; --gap-l: 32px;
@@ -92,9 +92,31 @@
             padding: 0;
         }
 
-        #mistakesDisplay { display: flex; gap: 6px; margin-bottom: var(--gap-m); }
-        .mistake-segment { width: 35px; height: 8px; background-color: var(--color-surface); border: 1px solid var(--color-func); transition: background-color 200ms; }
-        .mistake-segment.filled { background-color: var(--color-error); box-shadow: 0 0 5px var(--color-error); }
+        /* ACTUALIZADO: HUD de Errores rediseñado a "Células de Integridad" hexagonales. */
+        @keyframes warning-pulse {
+            50% { box-shadow: 0 0 12px var(--color-error), 0 0 4px var(--color-error); }
+        }
+        #mistakesDisplay { display: flex; gap: 8px; margin-bottom: var(--gap-m); align-items: center; }
+        #mistakesDisplay::before {
+            content: 'SYSTEM INTEGRITY:';
+            color: var(--color-text-passive);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-right: var(--gap-m);
+        }
+        .mistake-segment {
+            width: 28px;
+            height: 32px;
+            background-color: var(--color-surface);
+            transition: background-color 200ms;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: inset 0 0 0 2px var(--color-func);
+        }
+        .mistake-segment.filled {
+            background-color: var(--color-error);
+            box-shadow: 0 0 8px var(--color-error);
+            animation: warning-pulse 1.5s infinite ease-in-out;
+        }
 
         .ascii-art-container { width: 120px; height: 120px; margin-bottom: var(--gap-m); }
         .ascii-art { position: relative; width: 100%; height: 100%; }
@@ -111,17 +133,17 @@
             <div id="profiles" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: SELECT PROFILE</span><div class="telemetry-group"><div class="status-light"></div><span>SYSTEM ONLINE</span></div></header>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; width: 100%;"><h2>PERFILES DE USUARIO</h2><ul id="profilesList"></ul><button id="goToPlayerCreateButton" class="interactive-button">CREAR NUEVO PERFIL</button></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r25</footer>
             </div>
             <div id="player" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: CREATE PROFILE</span><div class="telemetry-group"><div class="status-light"></div><span>SYSTEM ONLINE</span></div></header>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; width: 100%;"><h2>NUEVO JUGADOR</h2><div id="playerNameDisplay">_</div><div id="virtualKeyboard"></div><div style="display: flex; gap: 16px; margin-top: 16px;"><button id="cancelPlayerButton">CANCELAR</button></div></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r25</footer>
             </div>
             <div id="mainMenu" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: MAIN MENU</span><div class="telemetry-group"><div class="status-light"></div><span>SYSTEM ONLINE</span></div></header>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; width: 100%;"><h2 id="mainMenuHeader"></h2><div id="levelGrid"></div><button id="backToProfilesButton" style="margin-top: 16px;">VOLVER A PERFILES</button></div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r25</footer>
             </div>
             <div id="game" class="window">
                 <header class="telemetry-header"><span>HANGMAN :: GAME ACTIVE</span><div class="telemetry-group"><span>CPU</span><div class="telemetry-bars"><div class="telemetry-bar cpu"></div></div><span>MEM</span><div class="telemetry-bars"><div class="telemetry-bar mem"></div></div></div></header>
@@ -132,7 +154,7 @@
                     <div id="wordDisplay"></div>
                     <div id="gameKeyboard"></div>
                 </div>
-                <footer class="telemetry-footer">BUILD: v4.4.0-r24</footer>
+                <footer class="telemetry-footer">BUILD: v4.4.0-r25</footer>
             </div>
             <div id="victory" class="window"><div class="ascii-art-container"><div class="ascii-art ascii-art-victory"><div></div></div></div><h1 style="color: var(--color-success);">N&Uacute;CLEO ESTABLE</h1><h2>VICTORIA</h2><p>HAS ADIVINADO EL T&Eacute;RMINO CORRECTAMENTE.</p><button id="victoryToMenuButton">VOLVER AL MEN&Uacute;</button></div>
             <div id="gameOver" class="window"><div class="ascii-art-container"><div class="ascii-art ascii-art-defeat"><div></div></div></div><h1 style="color: var(--color-error);">FALLO CR&Iacute;TICO</h1><h2>DERROTA</h2><p id="gameOverCorrectWord"></p><button id="gameOverToMenuButton">REINTENTAR DESDE EL MEN&Uacute;</button></div>
@@ -289,7 +311,7 @@
                 };
 
                 function init() {
-                    console.log('[BOOT][INFO] INICIALIZANDO HANGMAN v4.4.0-r24 (REGRESSION_FIX)...');
+                    console.log('[BOOT][INFO] INICIALIZANDO HANGMAN v4.4.0-r25 (HEX_HUD_UPGRADE)...');
                     state.game.prngState = new Date().getTime();
                     loadProfilesFromStorage(); populateLevelGrid(); renderProfiles(); renderPlayerKeyboard();
                     setTimeout(function() { showWindow('title'); }, 1000);
